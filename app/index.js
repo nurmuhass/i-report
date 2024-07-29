@@ -25,7 +25,7 @@ const Index = () => {
       !inAuthGroup
     ) {
       // Redirect to the login page.
-      router.replace("/login");
+      router.replace("/welcome");
     } else if (isLoggedIn) {
       // go to tabs root.
       router.replace("/(tabs)/home");

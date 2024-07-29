@@ -2,6 +2,7 @@ import { Text, View, TextInput, StyleSheet } from "react-native";
 import { useRef } from "react";
 import { AuthStore, appSignUp } from "../../store.js";
 import { Stack, useRouter } from "expo-router";
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function CreateAccount() {
   const router = useRouter();
@@ -11,11 +12,24 @@ export default function CreateAccount() {
   const passwordRef = useRef("");
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+    <View style={{ flex: 1,backgroundColor:'#ffffff' }}>
+       <View style={{marginLeft:15 }}>
       <Stack.Screen
         options={{ title: "Create Account", headerLeft: () => <></> }}
       />
-      <View>
+
+
+<View style={{backgroundColor:'grey',borderRadius:5,width:28,marginTop:30}}>
+  <Ionicons name="chevron-back" size={22} color="black" />
+</View>
+
+<View style={{marginTop:20}}>
+  <Text style={{fontSize:32,fontWeight:'bold'}}>Let's </Text>
+  <Text style={{fontSize:32,fontWeight:'bold'}}>Get Started</Text>
+</View>
+<Text style={{marginTop:40}}>Please fill the details to create an account</Text>
+
+      <View style={{marginTop:10}}>
         <Text style={styles.label}>Email</Text>
         <TextInput
           placeholder="email"
@@ -90,6 +104,7 @@ export default function CreateAccount() {
       >
         CANCEL
       </Text>
+      </View>
     </View>
   );
 }
