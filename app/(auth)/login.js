@@ -1,7 +1,7 @@
 import { Text, View, TextInput, StyleSheet, Alert } from "react-native";
-import { AuthStore, appSignIn } from "../../store.js";
+import { AuthStore, } from "../../store.js";
 import { Stack, useRouter } from "expo-router";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { StatusBar } from "react-native";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
@@ -10,11 +10,36 @@ import Feather from '@expo/vector-icons/Feather';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import { Button } from "@rneui/themed";
 import { TouchableOpacity } from "react-native";
+import Loader from "../../components/Loader.js";
+import {
+  signInWithEmailAndPassword,
+} from "firebase/auth/react-native";
+import { auth } from "../../firebase-config.js";
 
 export default function LogIn() {
   const router = useRouter();
   const emailRef = useRef("");
   const passwordRef = useRef("");
+  const [loading, setLoading] = useState(false);
+
+  const appSignIn = async (email, password) => {
+    try {
+      setLoading(true);
+      const resp = await signInWithEmailAndPassword(auth, email, password);
+      AuthStore.update((store) => {
+        store.user = resp.user;
+        store.isLoggedIn = resp.user ? true : false;
+      });
+      return { user: auth.currentUser };
+      setLoading(false);
+    } catch (e) {
+      setLoading(false);
+      return { error: e };
+     
+    }
+  };
+
+
 
   return (
 <>
@@ -80,22 +105,35 @@ export default function LogIn() {
 </View>
        
 
-        <Button
-        buttonStyle={{marginTop:10,width:'90%',padding:15,
-          backgroundColor:'#00C26F',color:'#fff',borderRadius:20,shadowColor:'#3E3E3E',shadowOffset:{width:0,height:10},shadowOpacity:0.2,shadowRadius:8,elevation:4}}
-  
-          onPress={async () => {
-            const resp = await appSignIn(emailRef.current, passwordRef.current);
-            if (resp?.user) {
-              router.replace("/(tabs)/home");
-            } else {
-              console.log(resp.error)
-              Alert.alert("Login Error", resp.error?.message)
-            }
-          }}
-        >
-          Login
-        </Button>
+{loading ? 
+  <View style={{marginTop:10,width:'90%',padding:15,
+      backgroundColor:'#fff',color:'#00C26F',borderRadius:20,shadowColor:'#3E3E3E',
+      shadowOffset:{width:0,height:10},shadowOpacity:0.2,shadowRadius:8,elevation:4,alignItems:'center',justifyContent:'center'}}>
+        <Loader/>
+    </View>
+:
+
+<Button
+buttonStyle={{marginTop:10,width:'90%',padding:15,
+  backgroundColor:'#00C26F',color:'#fff',borderRadius:20,shadowColor:'#3E3E3E',shadowOffset:{width:0,height:10},shadowOpacity:0.2,shadowRadius:8,elevation:4}}
+
+  onPress={async () => {
+    const resp = await appSignIn(emailRef.current, passwordRef.current);
+    if (resp?.user) {
+      router.replace("/(tabs)/home");
+    } else {
+      console.log(resp.error)
+      Alert.alert("Login Error", resp.error?.message)
+    }
+  }}
+
+>
+  Login
+</Button>
+
+}
+
+
 
 
   <View style={{marginTop:30,flexDirection:'row',alignItems:'center',justifyContent:'center'}}>

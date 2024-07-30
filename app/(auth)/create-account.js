@@ -1,6 +1,6 @@
 import { Text, View, TextInput, StyleSheet, StatusBar } from "react-native";
-import { useRef } from "react";
-import { AuthStore, appSignUp } from "../../store.js";
+import { useRef, useState } from "react";
+import { AuthStore } from "../../store.js";
 import { Stack, useRouter } from "expo-router";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
@@ -8,13 +8,38 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Feather from '@expo/vector-icons/Feather';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import { Button } from "@rneui/themed";
+import { TouchableOpacity } from "react-native";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../firebase-config.js";
+import Loader from "../../components/Loader.js";
+import { Alert } from "react-native";
 
 export default function CreateAccount() {
   const router = useRouter();
   const emailRef = useRef("");
-  const firstNameRef = useRef("");
-  const lastNameRef = useRef("");
+  const fullNameRef = useRef("");
   const passwordRef = useRef("");
+  const [loading, setLoading] = useState(false);
+
+  const appSignUp = async (email, password, displayName) => {
+    try {
+      setLoading(true);
+      // this will trigger onAuthStateChange to update the store..
+      const resp = await createUserWithEmailAndPassword(auth, email, password);
+  
+      AuthStore.update((store) => {
+        store.user = auth.currentUser;
+        store.isLoggedIn = true;
+      });
+  
+      return { user: auth.currentUser };
+      setLoading(false);
+    } catch (e) {
+      setLoading(false);
+      return { error: e };
+    }
+  };
+
 
   return (
     <View style={{ flex: 1,backgroundColor:'#ffffff' }}>
@@ -59,31 +84,18 @@ export default function CreateAccount() {
       <View>
        
         <TextInput
-          placeholder="Enter Your FirstName"
-          nativeID="firstName"
+          placeholder="Enter Your FullName"
+          nativeID="FullName"
           onChangeText={(text) => {
-            firstNameRef.current = text;
+            fullNameRef.current = text;
           }}
           style={styles.textInput}
         />
 
-<FontAwesome5 name="user" size={18} color="#555"  style={styles.icon}/>
+        <FontAwesome5 name="user" size={18} color="#555"  style={styles.icon}/>
       </View>
 
 
-      <View>
-   
-        <TextInput
-          placeholder="Enter Your LastName"
-          nativeID="lastName"
-          onChangeText={(text) => {
-            lastNameRef.current = text;
-          }}
-          style={styles.textInput}
-        />
-
-<FontAwesome5 name="user" size={18} color="#555"  style={styles.icon}/>
-      </View>
       <View>
        
         <TextInput
@@ -99,6 +111,15 @@ export default function CreateAccount() {
       </View>
       </View>
 
+      {loading ? 
+  <View style={{marginTop:10,width:'90%',padding:15,
+      backgroundColor:'#fff',color:'#00C26F',borderRadius:20,shadowColor:'#3E3E3E',
+      shadowOffset:{width:0,height:10},shadowOpacity:0.2,shadowRadius:8,elevation:4,alignItems:'center',justifyContent:'center'}}>
+        <Loader/>
+    </View>
+:
+
+
       <Button
       buttonStyle={{marginTop:10,width:'90%',padding:15,
         backgroundColor:'#00C26F',color:'#fff',borderRadius:20,shadowColor:'#3E3E3E',shadowOffset:{width:0,height:10},shadowOpacity:0.2,shadowRadius:8,elevation:4}}
@@ -107,7 +128,7 @@ export default function CreateAccount() {
           const resp = await appSignUp(
             emailRef.current,
             passwordRef.current,
-            firstNameRef.current + " " + lastNameRef.current
+            fullNameRef.current 
           );
           if (resp?.user) {
             router.replace("/(tabs)/home");
@@ -119,6 +140,8 @@ export default function CreateAccount() {
       >
         Sign up
       </Button>
+
+}
 <View style={{marginTop:30,flexDirection:'row',alignItems:'center',justifyContent:'center'}}>
   <Text>Already have an account!</Text>
 <Text
